@@ -9,6 +9,10 @@ public class HiResScreenshot : MonoBehaviour {
 	 
 	 public Camera camera;
 
+     public GameObject testObj;
+
+     private Plane[] planes;
+
      private bool takeHiResShot = false;
  
      public static string ScreenShotName(int width, int height) {
@@ -21,7 +25,17 @@ public class HiResScreenshot : MonoBehaviour {
      public void TakeHiResShot() {
          takeHiResShot = true;
      }
- 
+
+     void Update()
+     {
+        Bounds bounds = testObj.GetComponent<Renderer>().bounds;
+        planes = GeometryUtility.CalculateFrustumPlanes(camera);
+        if (GeometryUtility.TestPlanesAABB(planes, bounds))
+            Debug.Log(testObj.name + " has been detected!");
+        else
+            Debug.Log("Nothing has been detected");
+     }
+
      void LateUpdate() {
          takeHiResShot |= Input.GetKeyDown("k");
          if (takeHiResShot) {
