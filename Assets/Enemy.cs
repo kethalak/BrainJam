@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public enum ThreatType{ Linear, Quadratic}
 public enum ValueType{ Linear, Quadratic}
@@ -8,46 +9,56 @@ public enum RiskType{ Awareness, Step}
 
 public class Enemy : MonoBehaviour {
 
-	[Header("Threat and Value Settings")]
+	[Header("Threat Settings")]
 	[SerializeField]
 	private ThreatType threatType = ThreatType.Linear;
-
-	public ValueType valueType = ValueType.Linear;
-
 	[SerializeField]
 	private RiskType riskType = RiskType.Step;
-
 	[SerializeField]
 	private float awareness = 5;
 	[SerializeField]
-	private float maxValue = 1000;
-	[SerializeField]
 	private float maxRadius = 5;
-
+	[SerializeField]
+	private float threatCoefficient = 1;
+	[SerializeField]
+	private float threatConstant = 0;
 	private float currentRadius;
 
-	[Header("Additional Threat Settings")]
+	[Header("Value Settings")]
 	[SerializeField]
-	private float coefficient = 1;
+	private ValueType valueType = ValueType.Linear;
 	[SerializeField]
-	private float constant = 0;
+	private float maxValue = 1000;
+	[SerializeField]
+	private float valueRadius = 15;
+	[SerializeField]
+	private float valueCoefficient = 1;
+	[SerializeField]
+	private float valueConstant = 0;
+	
 
 	private Animator anim;
-
 	private GameObject player;
-
 	private float awarenessTimestamp;
+	private float despawnTimer= 2;
+	private Material mat;
+	private bool approachPlayer = false;
+	private HandheldCamera handheldCam;
+
+	NavMeshAgent agent;
 
 	void Awake()
 	{
+		agent = GetComponent<NavMeshAgent>();
+		mat = GetComponentInChildren<Renderer>().material;
 		currentRadius = maxRadius;
 		anim = GetComponent<Animator>();
 		player = GameObject.FindGameObjectWithTag("Player");
+		handheldCam = player.GetComponentInChildren<HandheldCamera>();
 	}
 
 	void AssessThreats  () 
 	{
-
 		float distanceFromPlayer = Vector3.Distance(transform.position, player.transform.position);
 
 		if(riskType == RiskType.Awareness)
@@ -58,24 +69,26 @@ public class Enemy : MonoBehaviour {
 
 				if(threatType == ThreatType.Quadratic)
 				{
-					float chanceToAttack = Mathf.Pow((((maxRadius - distanceFromPlayer) / maxRadius)) * coefficient + constant, 2f);
+					float chanceToAttack = Mathf.Pow((((maxRadius - distanceFromPlayer) / maxRadius)) * threatCoefficient + threatConstant, 2f);
 					Debug.Log(string.Format("{0} attempted to attack with a {1}% chance to hit and rolled a {2}", transform.name, chanceToAttack * 100, randomNum * 100));
 
 					if(randomNum <= chanceToAttack)
 					{
 						Debug.Log(string.Format("{0} hit!", transform.name));
-						ApproachPlayer();
+						ApproachPlayer();						
+						handheldCam.cameraReady = false;
 					}
 				}
 				if(threatType == ThreatType.Linear)
 				{
-					float chanceToAttack = ((maxRadius - distanceFromPlayer) / maxRadius) * coefficient + constant;
+					float chanceToAttack = ((maxRadius - distanceFromPlayer) / maxRadius) * threatCoefficient + threatConstant;
 					Debug.Log(string.Format("{0} attempted to attack with a {1}% chance to hit and rolled a {2}", transform.name, chanceToAttack * 100, randomNum * 100));
 
 					if(randomNum <= chanceToAttack)
 					{
 						Debug.Log(string.Format("{0} hit!", transform.name));
 						ApproachPlayer();
+						handheldCam.cameraReady = false;
 					}
 				}
 			}
@@ -89,24 +102,26 @@ public class Enemy : MonoBehaviour {
 
 				if(threatType == ThreatType.Quadratic)
 				{
-					float chanceToAttack = Mathf.Pow((((maxRadius - currentRadius) / maxRadius)) * coefficient + constant, 2f);
+					float chanceToAttack = Mathf.Pow((((maxRadius - currentRadius) / maxRadius)) * threatCoefficient + threatConstant, 2f);
 					Debug.Log(string.Format("{0} attempted to attack with a {1}% chance to hit and rolled a {2}", transform.name, chanceToAttack * 100, randomNum * 100));
 
 					if(randomNum <= chanceToAttack)
 					{
 						Debug.Log(string.Format("{0} hit!", transform.name));
-						ApproachPlayer();
+						approachPlayer = true;
+						handheldCam.cameraReady = false;
 					}
 				}
 				if(threatType == ThreatType.Linear)
 				{
-					float chanceToAttack = ((maxRadius - currentRadius) / maxRadius) * coefficient + constant;
+					float chanceToAttack = ((maxRadius - currentRadius) / maxRadius) * threatCoefficient + threatConstant;
 					Debug.Log(string.Format("{0} attempted to attack with a {1}% chance to hit and rolled a {2}", transform.name, chanceToAttack * 100, randomNum * 100));
 
 					if(randomNum <= chanceToAttack)
 					{
 						Debug.Log(string.Format("{0} hit!", transform.name));
-						ApproachPlayer();
+						approachPlayer = true;
+						handheldCam.cameraReady = false;
 					}
 				}
 
@@ -115,14 +130,42 @@ public class Enemy : MonoBehaviour {
 		}
 	}
 
+	public float CalculateValue()
+	{
+		float distanceFromPlayer = Vector3.Distance(transform.position, player.transform.position);
+
+		if(valueType == ValueType.Quadratic)
+		{
+			float pointModifier = Mathf.Pow((((valueRadius - distanceFromPlayer) / valueRadius)) * threatCoefficient + threatConstant, 2f);
+
+			return pointModifier * maxValue;
+		}
+
+		if(valueType == ValueType.Linear)
+		{
+			float pointModifier = ((valueRadius - distanceFromPlayer) / valueRadius) * threatCoefficient + threatConstant;
+
+			return pointModifier * maxValue;
+		}
+
+		else return 0;
+	}
+
 	void ApproachPlayer()
 	{
-		anim.SetTrigger("Attack");
+		agent.SetDestination(player.transform.position);
+		if(Vector3.Distance(transform.position, player.transform.position) < 2)
+		{
+			Debug.Log("near player");
+			AttackPlayer();
+		}
 	}
 
 	void AttackPlayer()
 	{
-
+		approachPlayer = false;
+		anim.SetTrigger("Attack");
+		StartCoroutine(Dissapear(1));
 	}
 
 	void RunAway()
@@ -130,11 +173,31 @@ public class Enemy : MonoBehaviour {
 
 	}
 
-	void Dissapear()
+	public IEnumerator Dissapear(float time)
 	{
 
+		// despawnTimer -= Time.deltaTime;
+		// Color tempcolor = mat.color;
+		// tempcolor.a = Mathf.MoveTowards(tempcolor.a, 0, Time.deltaTime);
+		// mat.color = tempcolor;
+
+		// if(despawnTimer <= 0)
+		// {
+		// 	Destroy(this.gameObject);
+		// }
+		while(time > 0)
+		{
+			Debug.Log(time);
+			time -= Time.deltaTime;
+			yield return new WaitForEndOfFrame();
+			if(time <= 0)
+			{
+				handheldCam.cameraReady = true;
+				Destroy(this.gameObject);
+			}
+		}
 	}
-	
+
 	void Update () 
 	{
 		if(riskType == RiskType.Awareness && awarenessTimestamp <= Time.time)
@@ -147,8 +210,36 @@ public class Enemy : MonoBehaviour {
 		{
 			AssessThreats();
 		}
+
+		if(approachPlayer)
+		{
+			ApproachPlayer();
+		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
