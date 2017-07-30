@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
+using UnityEngine.SceneManagement;
 public class HandheldCamera : MonoBehaviour {
 
-     [SerializeField]
-     private int filmAmount = 8;
+
      [SerializeField]
      private int resWidth = 800;
      [SerializeField] 
@@ -27,7 +26,14 @@ public class HandheldCamera : MonoBehaviour {
      private float cooldownTimestamp;
      private Plane[] planes;
      private GameObject picture;
+     private Animator anim;
+     private bool gameover = false;
+     
+     public int pointSum;
+     
+     public List<GameObject> takenPictures = new List<GameObject>();
 
+     public int filmAmount = 8;
      public bool cameraReady = true;
  
      public static string ScreenShotName(int width, int height) 
@@ -36,7 +42,11 @@ public class HandheldCamera : MonoBehaviour {
                               width, height, 
                               System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
      }
- 
+     
+     void Awake()
+     {
+         anim = GetComponentInChildren<Animator>();
+     }
      void Start()
      {
         cooldownTimestamp = Time.time;
@@ -44,7 +54,13 @@ public class HandheldCamera : MonoBehaviour {
 
      void Update()
      {
-
+        if(filmAmount <= 0 && !gameover)
+        {
+            filmAmount = 0;
+            cameraReady = false;
+            gameover = true;
+            SceneManager.LoadScene("ScoreScreen");
+        }
      }
 
      void LateUpdate() {
@@ -57,6 +73,7 @@ public class HandheldCamera : MonoBehaviour {
 
      void TakePicture()
      {
+             anim.SetTrigger("PressButton");
              filmAmount -= 1;
              if(filmAmount <= 0)
              {
@@ -85,6 +102,7 @@ public class HandheldCamera : MonoBehaviour {
              picture.transform.SetParent(transform);
              picture.transform.localPosition = new Vector3(0, 0, -0.005f);
              picture.GetComponent<Renderer>().material.mainTexture = screenShot;
+             takenPictures.Add(picture);
 
              CalculatePoints();
      }
@@ -125,10 +143,11 @@ public class HandheldCamera : MonoBehaviour {
 
                 if( points > 0 )
                 {
+                    pointSum += (int)points;
                     TextMeshPro tmp = picture.GetComponentInChildren<TextMeshPro>();
                     tmp.text = points.ToString();
                     Debug.Log("You took a picture of " + hit.transform.name + "!");
-                    enemy.Dissapear(0);
+                    StartCoroutine(enemy.Dissapear(0));
                 }
 
             }

@@ -109,6 +109,7 @@ public class Enemy : MonoBehaviour {
 					{
 						Debug.Log(string.Format("{0} hit!", transform.name));
 						approachPlayer = true;
+						anim.SetTrigger("Move");
 						handheldCam.cameraReady = false;
 					}
 				}
@@ -121,6 +122,7 @@ public class Enemy : MonoBehaviour {
 					{
 						Debug.Log(string.Format("{0} hit!", transform.name));
 						approachPlayer = true;
+						anim.SetTrigger("Move");
 						handheldCam.cameraReady = false;
 					}
 				}
@@ -185,16 +187,16 @@ public class Enemy : MonoBehaviour {
 		// {
 		// 	Destroy(this.gameObject);
 		// }
-		while(time > 0)
+		while(time >= 0)
 		{
-			Debug.Log(time);
 			time -= Time.deltaTime;
-			yield return new WaitForEndOfFrame();
 			if(time <= 0)
 			{
 				handheldCam.cameraReady = true;
+				handheldCam.filmAmount -= 1;
 				Destroy(this.gameObject);
 			}
+			yield return new WaitForEndOfFrame();
 		}
 	}
 
