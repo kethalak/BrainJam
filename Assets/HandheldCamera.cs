@@ -34,7 +34,8 @@ public class HandheldCamera : MonoBehaviour {
      public List<GameObject> takenPictures = new List<GameObject>();
 
      public int filmAmount = 8;
-     public bool cameraReady = true;
+     private bool cameraReady = true;
+     public bool beingAttacked = false;
  
      public static string ScreenShotName(int width, int height) 
      {
@@ -61,13 +62,22 @@ public class HandheldCamera : MonoBehaviour {
             gameover = true;
             SceneManager.LoadScene("ScoreScreen");
         }
+
+        if(Time.time > cooldownTimestamp)
+        {
+            cameraReady = true;
+        }
      }
 
      void LateUpdate() {
-         if(Input.GetButton("Fire1") && Time.time > cooldownTimestamp && cameraReady)
+         if(OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger) || Input.GetButtonDown("Fire1"))
          {
-            TakePicture();
-            cooldownTimestamp = Time.time + pictureCooldown;
+            if(cameraReady && !beingAttacked && !gameover)
+            {
+                cameraReady = false;
+                TakePicture();
+                cooldownTimestamp = Time.time + pictureCooldown;
+            }
          }
      }
 
