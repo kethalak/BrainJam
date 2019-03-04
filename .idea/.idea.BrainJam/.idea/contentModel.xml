@@ -7,15 +7,6 @@
       <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
-      <e p="Assets\Csv.Serialization" t="Include">
-        <e p="CsvSerializer.cs" t="Include" />
-        <e p="Person.cs" t="Include" />
-        <e p="Program.cs" t="Include" />
-        <e p="Properties" t="Include">
-          <e p="AssemblyInfo.cs" t="Include" />
-        </e>
-        <e p="temp.cs" t="Include" />
-      </e>
       <e p="Assets\CustomizableGrid" t="Include">
         <e p="Editor" t="Include">
           <e p="CustomizeGridShaderGUI.cs" t="Include" />
@@ -648,7 +639,7 @@
           </e>
         </e>
       </e>
-      <e p="Assets\Trials.cs" t="Include" />
+      <e p="Assets\TrialController.cs" t="Include" />
       <e p="Assets\VRTK" t="Include">
         <e p="Editor" t="Include">
           <e p="VRTK_AdaptiveQualityEditor.cs" t="Include" />
