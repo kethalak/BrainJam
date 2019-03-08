@@ -199,11 +199,12 @@ public class Enemy : MonoBehaviour {
 		while(time >= 0)
 		{
 			time -= Time.deltaTime;
-			if(time <= 0)
-			{
-				handheldCam.beingAttacked = false;
+			if (time <= 0) {
 				handheldCam.FilmAmount -= 1;
+				yield return new WaitForEndOfFrame();
+				handheldCam.beingAttacked = false;
 			}
+
 			yield return new WaitForEndOfFrame();
 		}		
 	}

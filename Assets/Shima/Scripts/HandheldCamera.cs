@@ -38,14 +38,14 @@ public class HandheldCamera : MonoBehaviour {
      private bool cameraReady = true;
      public bool beingAttacked = false;
 
-    public Action OnFilmChanged;
+    public Action<bool> OnFilmChanged;
 
     public int FilmAmount {
         get { return filmAmount; }
         set {
             filmAmount = value;
             if(OnFilmChanged != null)
-                OnFilmChanged();
+                OnFilmChanged(beingAttacked);
         }
     }
 
