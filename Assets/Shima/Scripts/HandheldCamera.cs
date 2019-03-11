@@ -46,6 +46,7 @@ public class HandheldCamera : MonoBehaviour {
             filmAmount = value;
             if(OnFilmChanged != null)
                 OnFilmChanged(beingAttacked);
+            beingAttacked = false;
         }
     }
 
@@ -82,7 +83,7 @@ public class HandheldCamera : MonoBehaviour {
      }
 
      void LateUpdate() {
-         if(OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger) || Input.GetButtonDown("Fire1"))
+         if(OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger) || OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger) || Input.GetButtonDown("Fire1"))
          {
             if(cameraReady && !beingAttacked && !gameover)
             {

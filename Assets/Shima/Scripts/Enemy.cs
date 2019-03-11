@@ -201,8 +201,6 @@ public class Enemy : MonoBehaviour {
 			time -= Time.deltaTime;
 			if (time <= 0) {
 				handheldCam.FilmAmount -= 1;
-				yield return new WaitForEndOfFrame();
-				handheldCam.beingAttacked = false;
 			}
 
 			yield return new WaitForEndOfFrame();
@@ -226,7 +224,6 @@ public class Enemy : MonoBehaviour {
 			time -= Time.deltaTime;
 			if(time <= 0)
 			{
-				handheldCam.beingAttacked = false;
 				Destroy(this.gameObject);
 			}
 			yield return new WaitForEndOfFrame();

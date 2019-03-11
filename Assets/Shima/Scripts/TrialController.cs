@@ -36,7 +36,7 @@ public class TrialController : MonoBehaviour {
     
     void OnFilmAmountChanged(bool attacked) {
         
-        trialLog.AppendLine(String.Format("{0},{1},{2:F2},{3:F2}", phaseCount, !attacked, Vector3.Distance(handHeld.transform.position, creatureSpawn.transform.position), timeElapsed));
+        trialLog.AppendLine(String.Format("{0},{1},{2:F2},{3:F2}", phaseCount, attacked ? "0" : "1", Vector3.Distance(handHeld.transform.position, creatureSpawn.transform.position), timeElapsed));
             
         if (handHeld.FilmAmount > 0) {
             StartCoroutine(ResetTrial());
@@ -63,8 +63,9 @@ public class TrialController : MonoBehaviour {
 
     private void WriteToFile(StringBuilder sb, string path) {
         path += "/" + System.DateTime.Now.ToString("yyyy-MM-dd -- HH-mm-ss");
-        File.Create(path);
-        File.WriteAllText(sb.ToString(), path+".csv");
+        File.Create(path+".csv").Dispose();
+        File.WriteAllText(path+".csv", sb.ToString());
+        logWritten = true;
     }
 
     private struct PhaseData {
